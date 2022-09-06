@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,6 +13,7 @@ import { Line } from "react-chartjs-2";
 import dayjs from "dayjs";
 import { useRealTimeWeather } from "@/hooks/useWeather";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { GEOContext } from "@/App";
 
 dayjs.extend(relativeTime);
 ChartJS.register(
@@ -49,12 +50,9 @@ export const options = {
   },
 };
 
-export function WeatherLineChart(props) {
-  const {
-    data: realTimeData,
-    isLoading,
-    error,
-  } = useRealTimeWeather({ lat: props.lat, lon: props.lon });
+export function WeatherLineChart() {
+  const city = useContext(GEOContext);
+  const { data: realTimeData, isLoading, error } = useRealTimeWeather(city);
   if (isLoading) return <>loading...</>;
   if (error) return <>{error.message}</>;
   const forecast = realTimeData.daily;

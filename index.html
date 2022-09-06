@@ -5,18 +5,30 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/qweather-icons@1.1.1/font/qweather-icons.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/qweather-icons@1.1.1/font/qweather-icons.css"
+    />
     <style>
       html,
       body,
       #root {
         height: 100%;
         width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
       }
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <span class="loading"> loading... </span>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

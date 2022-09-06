@@ -6,9 +6,11 @@ import { WeatherBase } from "./components/weatherBase";
 import { SearchCity } from "./components/searchCity";
 import { Fade } from "./components/fade";
 import { useLocalStorage } from "./hooks/useLocalStorage";
+export const GEOContext = React.createContext(null);
 
 function App() {
   const [city, setCity] = useLocalStorage<any>("city", {});
+
   const handleSelectCity = (city) => {
     setCity(city);
   };
@@ -23,9 +25,11 @@ function App() {
         </Fade>
 
         <Fade in={!!(city && city.lat)}>
-          <ChartContainer className="p-10">
-            <WeatherLineChart lat={city.lat} lon={city.lon} />
-          </ChartContainer>
+          <GEOContext.Provider value={city}>
+            <ChartContainer className="p-10">
+              <WeatherLineChart />
+            </ChartContainer>
+          </GEOContext.Provider>
         </Fade>
       </Main>
     </Container>
