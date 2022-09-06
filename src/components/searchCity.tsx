@@ -6,6 +6,8 @@ import { useGEOLocation } from "@/hooks/useGEOLocation";
 import useSWR from "swr";
 import { Fade } from "./fade";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
+import { useDebounceEffect } from "@/hooks/useDebounceEffect";
+import { When } from "./When";
 
 const fetchLocation = (location) => {
   return axios
@@ -23,9 +25,7 @@ export function SearchCity(props) {
   const [localCity] = useLocalStorage("city", null);
   const [inputContent, setInputValue] = useState(get(localCity, "name", ""));
   const { lng, lat } = useGEOLocation();
-  useEffect(() => {
-    console.log(localCity);
-  }, [localCity]);
+  const [shouldListShow, setShouldListShow] = useState(false);
   function shouldFetch() {
     // 如果搜索历史有记录，则不操作
     if (localCity !== null) {
@@ -40,8 +40,6 @@ export function SearchCity(props) {
   const { data } = useSWR(shouldFetch, fetchLocation);
 
   useEffect(() => {
-    console.log(data);
-
     const item = get(data, ["location", "0"], null);
     if (item) {
       props.onSelect(item);
@@ -50,37 +48,58 @@ export function SearchCity(props) {
   }, [data]);
 
   const selectCity = (item) => {
-    setCityList([]);
-    props.onSelect(item);
+    if (item) {
+      props.onSelect(item);
+      setInputValue(item.name);
+    }
   };
-  const handleInputCity = async (value) => {
-    setInputValue(value);
-    const resp = await fetchLocation(value);
-    const cityList = resp?.location;
-    setCityList(cityList || []);
-  };
+
+  useDebounceEffect(
+    () => {
+      fetchLocation(inputContent).then((resp) => {
+        const cityList = resp?.location;
+        setCityList(cityList || []);
+      });
+    },
+    [inputContent],
+    {
+      wait: 600,
+    }
+  );
+
   return (
     <header className="px-8 py-8 flex items-end ">
       <City className="relative">
         <input
-          onChange={(evt) => handleInputCity(evt.target.value)}
+          onChange={(evt) => {
+            setInputValue(evt.target.value);
+          }}
+          onFocus={() => setShouldListShow(true)}
+          onBlur={() => setShouldListShow(false)}
           value={inputContent}
           type="text"
           placeholder="Type here"
           className="input input-bordered input-info w-full max-w-xs"
         />
-        <Fade in={!isEmpty(cityList)}>
-          <ul className="flex flex-col gap-1 absolute left-0 top-14 py-1 z-50 bg-white right-0 border-gray-100 rounded-lg shadow-2xl">
-            {cityList.map((item) => (
-              <li
-                key={item.lat}
-                onClick={() => selectCity(item)}
-                className="hover:bg-base-200 p-2"
-              >
-                {item.name}
-              </li>
-            ))}
-          </ul>
+        <Fade in={shouldListShow}>
+          <div className="absolute left-0 top-14 py-1 z-50 bg-white right-0 border-gray-100 rounded-lg shadow-2xl">
+            <When if={isEmpty(cityList)}>
+              <div className="p-2">请输入...</div>
+            </When>
+            <When if={!isEmpty(cityList)}>
+              <ul className="flex flex-col gap-1 ">
+                {cityList.map((item) => (
+                  <li
+                    key={item.lat}
+                    onClick={() => selectCity(item)}
+                    className="hover:bg-base-200 p-2"
+                  >
+                    {item.name}
+                  </li>
+                ))}
+              </ul>
+            </When>
+          </div>
         </Fade>
       </City>
     </header>
