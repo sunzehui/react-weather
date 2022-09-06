@@ -7,7 +7,6 @@ export function WeatherBase(props) {
   const { data, error } = useDailyWeather(props.cityId);
   if (error) return <>{error.message}</>;
   if (!data) return <>loading...</>;
-  console.log(data);
 
   return (
     <>
